@@ -6,7 +6,6 @@ spec:
 # This defines which pods are going to be included in this service
   selector:
     app: webapp
-    release: "0-5"
 
   ports:
     - name: http
