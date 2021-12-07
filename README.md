@@ -62,8 +62,10 @@ Queue image:
 * When we upgrade we might have a short down time
 
 ## Deployments
+* Similar to replica sets with automatic rolling updates
 * Creates and manages replica sets
 * We can create a zero down-time deployment with gradual deployment
+* see rollout status with above commands. can also rollback. 
 
 ## Rolling back rollouts
 * Get rollout history: `kubectl rollout history deploy(ment) webapp`
