@@ -85,6 +85,9 @@ Find your services by, for example, `nslookup <servicename>`
 
 * Github repo: https://github.com/DickChesterwood/k8s-fleetman
 
+## Data persistency 
+We can add volumes to containers, see mongo-stack.yaml
+
 ## Cluster Monitoring
 * Allocate more resources, working with Docker desktop on Darwin: in the docker desktop ui, set resources (cpus, RAM), then run minikube with: `minikube start --cpus <# of cpus> --memory <Size in MB>`
 * Show pods resources consumption and other info: `kubectl describe nodes`
