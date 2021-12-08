@@ -85,3 +85,6 @@ Find your services by, for example, `nslookup <servicename>`
 
 * Github repo: https://github.com/DickChesterwood/k8s-fleetman
 
+## Cluster Monitoring
+* Show pods resources consumption and other info: `kubectl describe nodes`
+* 
