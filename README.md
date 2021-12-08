@@ -88,6 +88,7 @@ Find your services by, for example, `nslookup <servicename>`
 ## Data persistency 
 We can add volumes to containers, see mongo-stack.yaml
 We can use local disk or many other options like cloud storage (EBS, Azure objects) and much more.
+The volume configuration is seperate from the mount settings.
 
 ## Cluster Monitoring
 * Allocate more resources, working with Docker desktop on Darwin: in the docker desktop ui, set resources (cpus, RAM), then run minikube with: `minikube start --cpus <# of cpus> --memory <Size in MB>`
