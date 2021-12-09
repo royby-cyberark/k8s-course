@@ -62,8 +62,10 @@ Queue image:
 * When we upgrade we might have a short down time
 
 ## Deployments
+* Similar to replica sets with automatic rolling updates
 * Creates and manages replica sets
 * We can create a zero down-time deployment with gradual deployment
+* see rollout status with above commands. can also rollback. 
 
 ## Rolling back rollouts
 * Get rollout history: `kubectl rollout history deploy(ment) webapp`
@@ -83,3 +85,12 @@ Find your services by, for example, `nslookup <servicename>`
 
 * Github repo: https://github.com/DickChesterwood/k8s-fleetman
 
+## Data persistency 
+We can add volumes to containers, see mongo-stack.yaml
+We can use local disk or many other options like cloud storage (EBS, Azure objects) and much more.
+The volume configuration is seperate from the mount settings.
+
+## Cluster Monitoring
+* Allocate more resources, working with Docker desktop on Darwin: in the docker desktop ui, set resources (cpus, RAM), then run minikube with: `minikube start --cpus <# of cpus> --memory <Size in MB>`
+* Show pods resources consumption and other info: `kubectl describe nodes`
+* 
