@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+spec:
+  selector:
+    matchLabels:
+      app: mongodb
+  replicas: 1
+  template: # Template for the pod
+    metadata: 
+      labels: 
+        app: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:3.6.5-jessie
+        volumeMounts:
+          - name: mongo-persistent-storage
+            mountPath: /data/db # mount point, location inside the container
+      volumes:
+        - name: mongo-persistent-storage
+          hostPath:
+            path: /mnt/some/directory/structure
+            type: DirectoryOrCreate
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleetman-mongodb
+spec:
+  selector:
+    app: mongodb
+  ports:
+    - name: mongoports
+      port: 27017
+  type: ClusterIP
+
