@@ -113,6 +113,9 @@ We added the following to our deployment spec, which is nice for dev, but for pr
 You probably don't want to hard code this into the deployment yaml, so that you can more easily replace the volume specs.
 So its better to use claims which are pointers to another config (best in its own yaml)
 
+* View peristent volumes: `kubectl get pv`
+* View peristent volume claims: `kubectl get pvc`
+
 # Cluster Monitoring
 * Allocate more resources, working with Docker desktop on Darwin: in the docker desktop ui, set resources (cpus, RAM), then run minikube with: `minikube start --cpus <# of cpus> --memory <Size in MB>`
 * Show pods resources consumption and other info: `kubectl describe nodes`
