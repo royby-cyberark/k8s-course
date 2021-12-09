@@ -86,9 +86,32 @@ Find your services by, for example, `nslookup <servicename>`
 * Github repo: https://github.com/DickChesterwood/k8s-fleetman
 
 ## Data persistency 
+
+### Volume
+
 We can add volumes to containers, see mongo-stack.yaml
 We can use local disk or many other options like cloud storage (EBS, Azure objects) and much more.
 The volume configuration is seperate from the mount settings.
+
+https://kubernetes.io/docs/concepts/storage/volumes/
+
+We added the following to our deployment spec, which is nice for dev, but for prod we will do something like store on EBS or some other cloud storage.
+
+`hostPath` - this means that its a local path (in docker desktop, on the VM running minikube)
+
+`type: DirectoryOrCreate` - will create the dir if not existing
+
+```
+ volumes:
+   - name: mongo-persistent-storage
+     hostPath:
+       path: /mnt/some/directory/structure
+       type: DirectoryOrCreate
+```
+
+### Persistent volume claims
+You probably don't want to hard code this into the deployment yaml, so that you can more easily replace the volume specs.
+So its better to use claims which are pointers to another config (best in its own yaml)
 
 ## Cluster Monitoring
 * Allocate more resources, working with Docker desktop on Darwin: in the docker desktop ui, set resources (cpus, RAM), then run minikube with: `minikube start --cpus <# of cpus> --memory <Size in MB>`
