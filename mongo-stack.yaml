@@ -20,10 +20,9 @@ spec:
             mountPath: /data/db # mount point, location inside the container
       volumes:
         - name: mongo-persistent-storage
-          hostPath:
-            path: /mnt/some/directory/structure
-            type: DirectoryOrCreate
-
+        # A pointer to the configuration of how we want the mount io be implemented
+          persistentVolumeClaim:
+            claimName: mongo-pvc
 ---
 
 apiVersion: v1
