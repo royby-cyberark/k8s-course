@@ -120,3 +120,15 @@ So its better to use claims which are pointers to another config (best in its ow
 * Allocate more resources, working with Docker desktop on Darwin: in the docker desktop ui, set resources (cpus, RAM), then run minikube with: `minikube start --cpus <# of cpus> --memory <Size in MB>`
 * Show pods resources consumption and other info: `kubectl describe nodes`
 * 
+
+# EKS - K8s on AWS
+## Creating the EKS cluster
+* Check kubectl supported version in the EKS dashboard (create new but don't follow through, just get the default version of kubectl)
+* Install the right version of kubectl
+* Install eksctl
+* Create cluster: `eksctl create cluster --name <cluster-name> --nodes-min=3`
+
+## Destroying the EKS cluster
+* Run: `eksctl delete cluster <cluster-name>`
+
+
