@@ -130,5 +130,12 @@ So its better to use claims which are pointers to another config (best in its ow
 
 ## Destroying the EKS cluster
 * Run: `eksctl delete cluster <cluster-name>`
+* Verify destoryed: 
+  * ec2 instances
+  * ec2 dashboard, Load balancer - verfy deleted
+  * In EKS, clusters - verify cluster is deleted
+  * ec2 dashboard, EBS, volumes
+    * delete the kubernetes-dynamic-pvc-XXXX (how do you know which one?) - it will be in state=available 
+    * if you're also ran an eks stack, you will see an additional 3 volumes 
 
 
