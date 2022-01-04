@@ -1,6 +1,10 @@
 My notes for this course:
 https://www.udemy.com/course/kubernetes-microservices
 
+See branches for:
+* local-cluster
+* eks-cluster
+
 # Course project startup
 * `minikube start`
 * `minikube service --url fleetman-queue`
