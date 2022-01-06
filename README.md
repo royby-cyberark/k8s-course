@@ -144,4 +144,6 @@ So its better to use claims which are pointers to another config (best in its ow
 
 ## Changes on EKS
 * Updated the storage.yaml to specify the aws-ebs storage
-* In services.yaml, we now use LoadBalancer as the type - we can do this only in a cloud environment where we have the load balancer. 
+* In services.yaml, for the fleetman-webapp service, we now use LoadBalancer as the type - we can do this only in a cloud environment where we have the load balancer. 
+  * Removed the NodeIp and updated the type to be LoadBanacer
+* for the queue service (and API gw if relevant): we removed the NodePort, and the node type to a ClusterIP so that the queue is only accessible from the cluster.
