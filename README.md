@@ -142,4 +142,6 @@ So its better to use claims which are pointers to another config (best in its ow
     * delete the kubernetes-dynamic-pvc-XXXX (how do you know which one?) - it will be in state=available 
     * if you're also ran an eks stack, you will see an additional 3 volumes 
 
-
+## Changes on EKS
+* Updated the storage.yaml to specify the aws-ebs storage
+* In services.yaml, we now use LoadBalancer as the type - we can do this only in a cloud environment where we have the load balancer. 
