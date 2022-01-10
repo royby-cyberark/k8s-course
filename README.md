@@ -131,19 +131,35 @@ So its better to use claims which are pointers to another config (best in its ow
 * Install the right version of kubectl
 * Install eksctl
 * Create cluster: `eksctl create cluster --name <cluster-name> --nodes-min=3`
+  * test adding: `--node-private-networking` to avoid public access from the internet. test the ELB SG - in the EC2 dashbaord, ELB, select your LB and see the SG inbound. see: https://eksctl.io/usage/vpc-subnet-settings/
+* Then apply your config: `kubectl apply -f .`
 
 ## Destroying the EKS cluster
 * Run: `eksctl delete cluster <cluster-name>`
 * Verify destoryed: 
-  * ec2 instances
-  * ec2 dashboard, Load balancer - verfy deleted
-  * In EKS, clusters - verify cluster is deleted
+  * ec2 instances (is auto ternimated)
+  * ec2 dashboard, Load balancer - verfy deleted (is auto deleted)
+  * In EKS, clusters - verify cluster is deleted (is auto deleted)
   * ec2 dashboard, EBS, volumes
-    * delete the kubernetes-dynamic-pvc-XXXX (how do you know which one?) - it will be in state=available 
-    * if you're also ran an eks stack, you will see an additional 3 volumes 
+    * **NOT AUTO DESTROYED! delete the kubernetes-dynamic-pvc-XXXX (how do you know which one?) - it will be in state=available**
+    * **NOT AUTO DESTROYED! if you're also ran an eks stack, you will see an additional 3 volumes**
+    * You can search by tag values, use the cluster name
 
 ## Changes on EKS
 * Updated the storage.yaml to specify the aws-ebs storage
 * In services.yaml, for the fleetman-webapp service, we now use LoadBalancer as the type - we can do this only in a cloud environment where we have the load balancer. 
   * Removed the NodeIp and updated the type to be LoadBanacer
 * for the queue service (and API gw if relevant): we removed the NodePort, and the node type to a ClusterIP so that the queue is only accessible from the cluster.
+
+## EKS - Node failure survival
+* To know what nodes your pods are running on, run: `kubectl get pods -o wide` - and see what instances each pod's running on.
+* In case a node goes down (e.g. terminated), then a new node instance will be brought up. this is done by the auto-scaling group.
+* If we have an app running only on one pod, then we are at the graces of the auto-scaling group.
+* **k8s** will NOT auto-balance the pods between nodes, if one node goes down k8s will start the pod on existing ones, even that auto-scaling might bring up another node
+* in our workloads.yaml we use deployments - where we specify the replicas number - how many instances of the pod are running at a time
+* We update our webapp replicas to 2, 3 or whatever your requirements are.
+* What about other pods? the queue is stateful, we can't simply replicate it. **STRIVE FOR STATELESS PODS!** - what to do?
+  * look for replication options for the queue (ActiveMQ does that), same for the db
+  * better - look for your cloud provider (AmazonMQ/SQS), same for db
+
+
