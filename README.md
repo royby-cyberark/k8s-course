@@ -130,8 +130,8 @@ So its better to use claims which are pointers to another config (best in its ow
 * Check kubectl supported version in the EKS dashboard (create new but don't follow through, just get the default version of kubectl)
 * Install the right version of kubectl
 * Install eksctl
-* Create cluster: `eksctl create cluster --name <cluster-name> --nodes-min=3`
-  * test adding: `--node-private-networking` to avoid public access from the internet. test the ELB SG - in the EC2 dashbaord, ELB, select your LB and see the SG inbound. see: https://eksctl.io/usage/vpc-subnet-settings/
+* Create cluster: `eksctl create cluster --name <cluster-name> --nodes-min=3`  WARNING! This creates public access to the ELB
+  * Try this: https://eksctl.io/usage/vpc-cluster-access/, with cluster config: https://eksctl.io/, add:  `-f cluster.yaml`
 * Then apply your config: `kubectl apply -f .`
 
 ## Destroying the EKS cluster
