@@ -153,4 +153,8 @@ So its better to use claims which are pointers to another config (best in its ow
 
 ## EKS - Node failure survival
 * To know what nodes your pods are running on, run: `kubectl get pods -o wide` - and see what instances each pod's running on.
-* 
+* In case a node goes down (e.g. terminated), then a new node instance will be brought up. this is done by the auto-scaling group.
+* If we have an app running only on one pod, then we are at the graces of the auto-scaling group.
+* **k8s** will NOT auto-balance the pods between nodes, if one node goes down k8s will start the pod on existing ones, even that auto-scaling might bring up another node
+* in our workloads.yaml we use deployments - where we specify the replicas number - how many instances of the pod are running at a time
+* We update our webapp replicas to 2.
