@@ -158,3 +158,8 @@ So its better to use claims which are pointers to another config (best in its ow
 * **k8s** will NOT auto-balance the pods between nodes, if one node goes down k8s will start the pod on existing ones, even that auto-scaling might bring up another node
 * in our workloads.yaml we use deployments - where we specify the replicas number - how many instances of the pod are running at a time
 * We update our webapp replicas to 2, 3 or whatever your requirements are.
+* What about other pods? the queue is stateful, we can't simply replicate it. **STRIVE FOR STATELESS PODS!** - what to do?
+  * look for replication options for the queue (ActiveMQ does that), same for the db
+  * better - look for your cloud provider (AmazonMQ/SQS), same for db
+
+
