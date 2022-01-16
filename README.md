@@ -143,6 +143,8 @@ So its better to use claims which are pointers to another config (best in its ow
   * In EKS, clusters - verify cluster is deleted (is auto deleted)
   * ec2 dashboard, EBS, volumes
     * **NOT AUTO DESTROYED! delete the kubernetes-dynamic-pvc-XXXX (how do you know which one?) - it will be in state=available**
+      * get leftover volume: `aws ec2 describe-volumes --filters Name=tag-key,Values=kubernetes.io/cluster/<cluster-name>`
+      * delete this volume: `aws ec2 delete-volume --volume-id <vol-id>`
     * **NOT AUTO DESTROYED! if you're also ran an ELK stack, you will see an additional 3 volumes**
     * You can search by tag values, use the cluster name
 
