@@ -130,8 +130,9 @@ So its better to use claims which are pointers to another config (best in its ow
 * Check kubectl supported version in the EKS dashboard (create new but don't follow through, just get the default version of kubectl)
 * Install the right version of kubectl
 * Install eksctl
-* Create cluster: `eksctl create cluster --name <cluster-name> --nodes-min=3`  WARNING! This creates public access to the ELB
-  * Try this: https://eksctl.io/usage/vpc-cluster-access/, with cluster config: https://eksctl.io/, add:  `-f cluster.yaml`
+* Create cluster: `eksctl create cluster --name <cluster-name> --nodes-min=3`
+* WARNING! If you apply your yamls, as-is the LB service will create an opened SG. to avoid this, make sure you include spec.loadBalancerSourceRanges to allow only specific ip(s) - https://kubernetes.io/docs/concepts/services-networking/_print/
+
 * Then apply your config: `kubectl apply -f .`
 
 ## Destroying the EKS cluster
