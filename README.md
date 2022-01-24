@@ -120,10 +120,6 @@ So its better to use claims which are pointers to another config (best in its ow
 * View peristent volumes: `kubectl get pv`
 * View peristent volume claims: `kubectl get pvc`
 
-# Cluster Monitoring
-* Allocate more resources, working with Docker desktop on Darwin: in the docker desktop ui, set resources (cpus, RAM), then run minikube with: `minikube start --cpus <# of cpus> --memory <Size in MB>`
-* Show pods resources consumption and other info: `kubectl describe nodes`
-* 
 
 # EKS - K8s on AWS
 ## Creating the EKS cluster
@@ -165,4 +161,15 @@ So its better to use claims which are pointers to another config (best in its ow
   * look for replication options for the queue (ActiveMQ does that), same for the db
   * better - look for your cloud provider (AmazonMQ/SQS), same for db
 
-
+# Cluster Monitoring
+* Allocate more resources, working with Docker desktop on Darwin: in the docker desktop ui, set resources (cpus, RAM), then run minikube with: `minikube start --cpus <# of cpus> --memory <Size in MB>`
+* Show pods resources consumption and other info: `kubectl describe nodes`
+* For installing the ELK stack into our cluster, we took the course files: elastic-stack.yaml, fluentd-config.yaml. it was previously in https://github.com/kubernetes/kubernetes/tree/master/cluster/addons, not sure where they went.
+* IMPORTANT! I added the loadBalancerSourceRanges like in services.yaml to avoid exposing the LB address
+* apply the two files
+* kubectl get pods - you only see your pods (remember namespaces), elk is deployed to the kube-system ns, use this: `kubectl get pods -n kube-system`
+* wait until all pods in kube-system are running.
+* get kube-system services: `kubectl get svc -n kube-system`, kibana has an external IP
+* see kibana LB ingress address: `kubectl describe svc kibana-logging -n kube-system`, note the pod. you can also see this in the AWS LB page, and find the port under the "Listening" tab.
+* Open kibana on the lb address with port 5601
+* 
