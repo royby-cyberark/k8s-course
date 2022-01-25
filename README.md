@@ -120,10 +120,6 @@ So its better to use claims which are pointers to another config (best in its ow
 * View peristent volumes: `kubectl get pv`
 * View peristent volume claims: `kubectl get pvc`
 
-# Cluster Monitoring
-* Allocate more resources, working with Docker desktop on Darwin: in the docker desktop ui, set resources (cpus, RAM), then run minikube with: `minikube start --cpus <# of cpus> --memory <Size in MB>`
-* Show pods resources consumption and other info: `kubectl describe nodes`
-* 
 
 # EKS - K8s on AWS
 ## Creating the EKS cluster
@@ -131,15 +127,60 @@ So its better to use claims which are pointers to another config (best in its ow
 * Install the right version of kubectl
 * Install eksctl
 * Create cluster: `eksctl create cluster --name <cluster-name> --nodes-min=3`
+* WARNING! If you apply your yamls, as-is the LB service will create an opened SG. to avoid this, make sure you include spec.loadBalancerSourceRanges to allow only specific ip(s) - https://kubernetes.io/docs/concepts/services-networking/_print/
+
+* Then apply your config: `kubectl apply -f .`
 
 ## Destroying the EKS cluster
 * Run: `eksctl delete cluster <cluster-name>`
 * Verify destoryed: 
-  * ec2 instances
-  * ec2 dashboard, Load balancer - verfy deleted
-  * In EKS, clusters - verify cluster is deleted
+  * ec2 instances (is auto ternimated)
+  * ec2 dashboard, Load balancer - verfy deleted (is auto deleted)
+  * In EKS, clusters - verify cluster is deleted (is auto deleted)
   * ec2 dashboard, EBS, volumes
-    * delete the kubernetes-dynamic-pvc-XXXX (how do you know which one?) - it will be in state=available 
-    * if you're also ran an eks stack, you will see an additional 3 volumes 
+    * **NOT AUTO DESTROYED! delete the kubernetes-dynamic-pvc-XXXX (how do you know which one?) - it will be in state=available**
+      * get leftover volume: `aws ec2 describe-volumes --filters Name=tag-key,Values=kubernetes.io/cluster/<cluster-name>`
+      * delete this volume: `aws ec2 delete-volume --volume-id <vol-id>`
+    * **NOT AUTO DESTROYED! if you're also ran an ELK stack, you will see an additional 3 volumes**
+    * You can search by tag values, use the cluster name
 
+## Changes on EKS
+* Updated the storage.yaml to specify the aws-ebs storage
+* In services.yaml, for the fleetman-webapp service, we now use LoadBalancer as the type - we can do this only in a cloud environment where we have the load balancer. 
+  * Removed the NodeIp and updated the type to be LoadBanacer
+* for the queue service (and API gw if relevant): we removed the NodePort, and the node type to a ClusterIP so that the queue is only accessible from the cluster.
 
+## EKS - Node failure survival
+* To know what nodes your pods are running on, run: `kubectl get pods -o wide` - and see what instances each pod's running on.
+* In case a node goes down (e.g. terminated), then a new node instance will be brought up. this is done by the auto-scaling group.
+* If we have an app running only on one pod, then we are at the graces of the auto-scaling group.
+* **k8s** will NOT auto-balance the pods between nodes, if one node goes down k8s will start the pod on existing ones, even that auto-scaling might bring up another node
+* in our workloads.yaml we use deployments - where we specify the replicas number - how many instances of the pod are running at a time
+* We update our webapp replicas to 2, 3 or whatever your requirements are.
+* What about other pods? the queue is stateful, we can't simply replicate it. **STRIVE FOR STATELESS PODS!** - what to do?
+  * look for replication options for the queue (ActiveMQ does that), same for the db
+  * better - look for your cloud provider (AmazonMQ/SQS), same for db
+
+# Cluster Monitoring
+* Allocate more resources, working with Docker desktop on Darwin: in the docker desktop ui, set resources (cpus, RAM), then run minikube with: `minikube start --cpus <# of cpus> --memory <Size in MB>`
+* Show pods resources consumption and other info: `kubectl describe nodes`
+* For installing the ELK stack into our cluster, we took the course files: elastic-stack.yaml, fluentd-config.yaml. it was previously in https://github.com/kubernetes/kubernetes/tree/master/cluster/addons, not sure where they went.
+* IMPORTANT! I added the loadBalancerSourceRanges like in services.yaml to avoid exposing the LB address
+* apply the two files
+* kubectl get pods - you only see your pods (remember namespaces), elk is deployed to the kube-system ns, use this: `kubectl get pods -n kube-system`
+* wait until all pods in kube-system are running.
+## Monitoring using an Elastic stack - Elasticsearch, Fluentd (or Logstash), Kibana
+### Getting started with Kibana
+* get kube-system services: `kubectl get svc -n kube-system`, kibana has an external IP
+* see kibana LB ingress address: `kubectl describe svc kibana-logging -n kube-system`, note the pod. you can also see this in the AWS LB page, and find the port under the "Listening" tab.
+* Open kibana on the lb address with port 5601
+
+### Setting up indices
+* Click on "setup index patterns"
+* We need to give Kibana the name of the index. our yaml which uses fluentd, will have by default a daily rotating index with a prefix of "logstash", you can also see this under "discover" in Kibana.
+* select @timestamp for the time filter
+* Create index
+* Open discover to see the logs and the search engine
+* This includes ALL logs, including the system logs.
+* To filter and see only our logs, its best to use namesapces: add a filter by looking up the kubernetes.namespace_name, expand it and from the "default" namespace (our namespace), click the + to add a filter. if you can't see it, you probably don't have errors in this timeframe, try to expand it to a longer one.
+* Under visualization you can create graphs, charts, etc. 

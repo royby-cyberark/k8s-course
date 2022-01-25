@@ -6,29 +6,22 @@ kind: PersistentVolumeClaim
 metadata: 
   name: mongo-pvc
 spec:
-  storageClassName: mylocalstorage
+  storageClassName: cloud-ssd
   # https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       # Here we are asking for 20gb, and for this we will need to find a volume with at least 20gb
-      storage: 20Gi
+      storage: 7Gi
 
 ---
 
 # How do we want it implemented?
-apiVersion: v1
-kind: PersistentVolume
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata: 
-  name: local-storage
-spec:
-  storageClassName: mylocalstorage
-  capacity:
-    # This is physical storage, e.g. in EBS it will allocate a 20Gi disk
-    storage: 20Gi
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: "/mnt/feeltman/location/mongodata"
-    type: DirectoryOrCreate
+  name: cloud-ssd
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp2
