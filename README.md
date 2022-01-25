@@ -169,7 +169,18 @@ So its better to use claims which are pointers to another config (best in its ow
 * apply the two files
 * kubectl get pods - you only see your pods (remember namespaces), elk is deployed to the kube-system ns, use this: `kubectl get pods -n kube-system`
 * wait until all pods in kube-system are running.
+## Monitoring using an Elastic stack - Elasticsearch, Fluentd (or Logstash), Kibana
+### Getting started with Kibana
 * get kube-system services: `kubectl get svc -n kube-system`, kibana has an external IP
 * see kibana LB ingress address: `kubectl describe svc kibana-logging -n kube-system`, note the pod. you can also see this in the AWS LB page, and find the port under the "Listening" tab.
 * Open kibana on the lb address with port 5601
-* 
+
+### Setting up indices
+* Click on "setup index patterns"
+* We need to give Kibana the name of the index. our yaml which uses fluentd, will have by default a daily rotating index with a prefix of "logstash", you can also see this under "discover" in Kibana.
+* select @timestamp for the time filter
+* Create index
+* Open discover to see the logs and the search engine
+* This includes ALL logs, including the system logs.
+* To filter and see only our logs, its best to use namesapces: add a filter by looking up the kubernetes.namespace_name, expand it and from the "default" namespace (our namespace), click the + to add a filter. if you can't see it, you probably don't have errors in this timeframe, try to expand it to a longer one.
+* Under visualization you can create graphs, charts, etc. 
