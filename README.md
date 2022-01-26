@@ -230,6 +230,7 @@ All the services are deployed as ClusterIP, which means they are not accessible 
   * Monitor persistent volumes dashboard: "General/Kubernetes/Persistent Volumes"
   * There are also other flavors of dashboards, e.g. "Nodes" similar to USE node
 
+# Using NodePort to access services instead of using LoadBalancer
 
 
 
