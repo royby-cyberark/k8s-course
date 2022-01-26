@@ -4,7 +4,9 @@ https://www.udemy.com/course/kubernetes-microservices
 See branches for:
 * local-cluster
 * eks-cluster
+* prometheus-stack
 
+IMPORTANT! Before deploying anything, replace ip with your own for any IP under `loadBalancerSourceRanges`. this will allow you to access those services that are only exposed to that address.
 # Course project startup
 * `minikube start`
 * `minikube service --url fleetman-queue`
@@ -184,3 +186,27 @@ So its better to use claims which are pointers to another config (best in its ow
 * This includes ALL logs, including the system logs.
 * To filter and see only our logs, its best to use namesapces: add a filter by looking up the kubernetes.namespace_name, expand it and from the "default" namespace (our namespace), click the + to add a filter. if you can't see it, you probably don't have errors in this timeframe, try to expand it to a longer one.
 * Under visualization you can create graphs, charts, etc. 
+
+## Monitoring with Prometheus and Grafana
+We want to install the Prometheus stack on our cluster, it is here: https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack, and generally you should follow the instructions there for any real system.
+
+But, we have a ready to apply yaml for this for testing purposes. this includes the custom-resource-definitions custom_resources_defs.yaml which you wouldn't want to use otherwise. 
+
+* **THIS IS ONLY FOR TESTING PURPOSES! IN REAL LIFE WE WOULD USE A PROPER HELM CHART**
+* you MUST apply `custom_resources_defs.yaml` first.
+* then, apply `eks-monitoring.yaml`
+* everything is deployed is the 'monitoring' namespace. list ns's with: `kubectl get ns`
+* list pods/svc: `kubectl get <pod/svc> -n monitoring` - note that no svc has an external ip
+
+* What did we get? (list svc)
+  * Prometheus to monitor different aspects
+    * svc `monitoring-kube-prometheus-prometheus` is the Prometheus ui (port 9090)
+  * Grafana to visualize
+  * Alert manager
+
+All the services are deployed as ClusterIP, which means they are not accessible from the outside there are several ways to expose them.
+
+* Here we will first change the ui svc into a LB, but later we will see other ways - updated the monitoring-kube-prometheus-prometheus service to LB as before (with access only to our IP)
+
+* get your LB address:port with `kubectl get svc -n monitoring` and login
+* node_load1, node_load5, node_load15 - show the load on all nodes in the last 1, 5, 15 minutes.
