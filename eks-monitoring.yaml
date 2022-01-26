@@ -35449,7 +35449,9 @@ metadata:
     app.kubernetes.io/version: "8.2.1"
     app.kubernetes.io/managed-by: Helm
 spec:
-  type: ClusterIP
+  loadBalancerSourceRanges:
+    - "194.90.225.101/32"
+  type: LoadBalancer
   ports:
     - name: service
       port: 80
