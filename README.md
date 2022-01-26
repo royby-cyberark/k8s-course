@@ -188,6 +188,8 @@ So its better to use claims which are pointers to another config (best in its ow
 * Under visualization you can create graphs, charts, etc. 
 
 ## Monitoring with Prometheus and Grafana
+
+### Settings up the EKS monitoring stack (prometheus, grafana)
 We want to install the Prometheus stack on our cluster, it is here: https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack, and generally you should follow the instructions there for any real system.
 
 But, we have a ready to apply yaml for this for testing purposes. this includes the custom-resource-definitions custom_resources_defs.yaml which you wouldn't want to use otherwise. 
@@ -211,6 +213,25 @@ All the services are deployed as ClusterIP, which means they are not accessible 
 * get your LB address:port with `kubectl get svc -n monitoring` and login
 * node_load1, node_load5, node_load15 - show the load on all nodes in the last 1, 5, 15 minutes.
 
-## Removing prmetheus LB
+### Removing prmetheus LB
 * We won't need to actually access prometheus externally, so revert the LB type into a ClusterIP
+* apply and verify that its a clusterip now by running `kubectl get svc -n monitoring`
+
+
+### Getting started with grafana
+* find grafana service with `kubectl get svc -n monitoring`
+* To allow access externally, we will set it as a LB, but we can also use a NodePort (see next) which is less robust
+* update the type of the service "monitoring-grafana" to LB with the usual ip restrictions
+* log in and update the default creds
+* Clicking on "Home" you get a list of many useful and less useful dashboards, many are focused on k8s. 
+  * we will focus on two: "USE Method / Node" - only for one node. "USE Method / Cluster" - for the entire cluster (better for health overview)
+  * USE is Utilization-Saturation-Errors and is a standard for monitoring such systems
+  * You can also look at k8s specific dashboards, e.g. "Kubernetes/Compute Resources/Pod"
+  * Monitor persistent volumes dashboard: "General/Kubernetes/Persistent Volumes"
+  * There are also other flavors of dashboards, e.g. "Nodes" similar to USE node
+
+# Using NodePort to access services instead of using LoadBalancer
+
+
+
 
