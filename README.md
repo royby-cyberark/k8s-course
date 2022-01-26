@@ -231,7 +231,13 @@ All the services are deployed as ClusterIP, which means they are not accessible 
   * There are also other flavors of dashboards, e.g. "Nodes" similar to USE node
 
 # Using NodePort to access services instead of using LoadBalancer
-
+* Change service type to "NodePort"
+* under ports, next to targetPort, add "nodePort" and give it a random high port. make sure it doesn't conflict with previously assigned port.
+* Update the security group to allow access to the high port from your ip address.
+* How do we know to what ip of which node to access? (we don't know on which node our service is running) - we can use ANY of the nodes public IP in the cluster!
+  k8s knows how to redirect you to the right node. 
+  **When you make a request to k8s, it doesn't matter to which node you make it, k8s takes care of it**
+  
 
 
 
