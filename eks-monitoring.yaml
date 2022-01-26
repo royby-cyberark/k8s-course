@@ -35449,7 +35449,9 @@ metadata:
     app.kubernetes.io/version: "8.2.1"
     app.kubernetes.io/managed-by: Helm
 spec:
-  type: ClusterIP
+  loadBalancerSourceRanges:
+    - "194.90.225.101/32"
+  type: LoadBalancer
   ports:
     - name: service
       port: 80
@@ -35644,9 +35646,10 @@ spec:
   selector:
     app.kubernetes.io/name: prometheus
     prometheus: monitoring-kube-prometheus-prometheus
-  loadBalancerSourceRanges:
-    - "194.90.225.101/32"
-  type: LoadBalancer
+  type: "ClusterIP"
+#   loadBalancerSourceRanges:
+#     - "194.90.225.101/32"
+#   type: LoadBalancer
 ---
 # Source: kube-prometheus-stack/charts/prometheus-node-exporter/templates/daemonset.yaml
 apiVersion: apps/v1
