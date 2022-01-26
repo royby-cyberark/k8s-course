@@ -210,3 +210,7 @@ All the services are deployed as ClusterIP, which means they are not accessible 
 
 * get your LB address:port with `kubectl get svc -n monitoring` and login
 * node_load1, node_load5, node_load15 - show the load on all nodes in the last 1, 5, 15 minutes.
+
+## Removing prmetheus LB
+* We won't need to actually access prometheus externally, so revert the LB type into a ClusterIP
+
