@@ -237,7 +237,11 @@ All the services are deployed as ClusterIP, which means they are not accessible 
 * How do we know to what ip of which node to access? (we don't know on which node our service is running) - we can use ANY of the nodes public IP in the cluster!
   k8s knows how to redirect you to the right node. 
   **When you make a request to k8s, it doesn't matter to which node you make it, k8s takes care of it**
-  
 
 
-
+# Alerting
+* Deploy prometheus with a LoadBalancer service so we can access it (or with a NodePort)
+* Open prometheus, alerting
+* Configure AlertManager with slack notifications
+  * I found this: https://grafana.com/blog/2020/02/25/step-by-step-guide-to-setting-up-prometheus-alertmanager-with-slack-pagerduty-and-gmail/
+  * 
