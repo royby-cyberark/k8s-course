@@ -1,5 +1,5 @@
 global:
-  slack_api_url: 'ENTER SLACK ENDPOINT HERE'
+  slack_api_url: 'enter your webhook URL here. Leave the quote marks in place'
 route:
   group_by: ['alertname']
   group_wait: 5s
@@ -10,7 +10,7 @@ route:
 receivers:
 - name: 'slack'
   slack_configs:
-  - channel: '#k8s-alerts'
+  - channel: '#alerts'
     icon_emoji: ':bell:'
     send_resolved: true
     text: "<!channel> \nsummary: {{ .CommonAnnotations.summary }}\ndescription: {{ .CommonAnnotations.description }}\nmessage: {{ .CommonAnnotations.message }}"
