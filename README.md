@@ -278,3 +278,5 @@ Prometheus are using a k8s secret to store the config. there's also config-map w
   * [Dead man snitch](https://deadmanssnitch.com/plans) - simply get a url and use it for the watchdog, we don't know if its AWS.
   * Being on AWS like us, maybe even in the same region, is not good, since if AWS goes down we get silence. 
   * We could investigate by nslooking the hostname, then the ip and try to identify the source.
+
+
