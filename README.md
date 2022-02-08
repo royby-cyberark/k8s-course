@@ -280,3 +280,10 @@ Prometheus are using a k8s secret to store the config. there's also config-map w
   * We could investigate by nslooking the hostname, then the ip and try to identify the source.
 
 
+## Using pagerduty with alertmanager
+see `alert-manager/sample_alertmanager_with_pagerduty.yaml`
+* it used the built-in configuration for pagerduty, which only takes the API key (see pagerduty_configs in the config yaml)
+* It also sends watchdog to dead man's snitch - under "DMS"
+* Under route, we specify that matches on alertname: Watchdog, will go to DMS and NOT to the other receivers.
+* To avoid bombarding us with the same alert, e.g. is something caused many pods to fail, then we group alerts with the `group-by: alertname`, which means that it will treat all alerts with the same name as the same alert within the group_interval time.
+  * group_wait is the wait time in seconds that alert manager will wait after the first alert, and before it starts alerting
