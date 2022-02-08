@@ -287,3 +287,4 @@ see `alert-manager/sample_alertmanager_with_pagerduty.yaml`
 * Under route, we specify that matches on alertname: Watchdog, will go to DMS and NOT to the other receivers.
 * To avoid bombarding us with the same alert, e.g. is something caused many pods to fail, then we group alerts with the `group-by: alertname`, which means that it will treat all alerts with the same name as the same alert within the group_interval time.
   * group_wait is the wait time in seconds that alert manager will wait after the first alert, and before it starts alerting
+  
