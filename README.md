@@ -237,7 +237,54 @@ All the services are deployed as ClusterIP, which means they are not accessible 
 * How do we know to what ip of which node to access? (we don't know on which node our service is running) - we can use ANY of the nodes public IP in the cluster!
   k8s knows how to redirect you to the right node. 
   **When you make a request to k8s, it doesn't matter to which node you make it, k8s takes care of it**
+
+
+# Alerting
+* Deploy prometheus with a LoadBalancer service so we can access it (or with a NodePort)
+* Open prometheus, alerting
+## Configure AlertManager with slack notifications
+Some docs: https://grafana.com/blog/2020/02/25/step-by-step-guide-to-setting-up-prometheus-alertmanager-with-slack-pagerduty-and-gmail/
+
+Prometheus are using a k8s secret to store the config. there's also config-map which is very similar, but here it uses a secret.
+
+* Our config file is `alertmanager.yaml` file, update it with the slack url and also the channel name.
+* List secrets with `kubectl get secrets -n monitoring`, the config one is: `alertmanager-monitoring-kube-prometheus-alertmanager`
+* Then get your secret yaml with `kubectl get secret -n monitoring alertmanager-monitoring-kube-prometheus-alertmanager -o yaml`
+* The data is your config in base64. To see, you can take it and run `echo <DATA VALUE> | base64 -d`
+* We must delete the secret first, before recreating it: `kubectl delete secret -n monitoring alertmanager-monitoring-kube-prometheus-alertmanager`
+* Now create the new "secret", by running `kubectl create secret generic --from-file alert-manager/alertmanager.yaml -n monitoring alertmanager-monitoring-kube-prometheus-alertmanager`
+  * to create the secret from file you need the `generic` and `--from-file`
+
+### Troubleshooting (also looking in containers)
+* Verify webhook is working (curl it)
+* Get the secret and verify the values of url and slack channel
+* To see if we have issues with our config, we can kubectl logs to the alert manager pod
+  * `kubectl get pods -n monitoring`
+  * `kubectl logs -f -n monitoring alertmanager-monitoring-kube-prometheus-alertmanager-0`, if you get an error that you need to specify a container name, then do it (the error will tell you what container names are available - alertmanager, config-reloader) by adding the -c <container name>
+    * `kubectl logs -f -n monitoring alertmanager-monitoring-kube-prometheus-alertmanager-0 -c alertmanager/config-reloader`
+    * get container names with `kubectl describe pod <podname> -n <namespace>`
+
+## Alert manager UI
+* The service we want is `monitoring-kube-prometheus-alertmanager` (see with `kubectl get svc -n monitoring`)
+* Open it with a LB or a NodePort
+* A possibly important feature here is silencing (silence button in the ui) with a duration
+* We might want to silence in advance on the case of planned maintenance, here we use the "new silence" 
+* alerts ARE STILL FIRING! just not alerting anything
+
+## Dealing with the watchdog alerts
+* We have a heartbeat alert (watchdog) that we get constantly, but we need an external system to notify us if we DO get an actual error if if the watchdog stopped alerting.
+* We need something external, even to our AWS account, region etc. 
+* Example vendors: 
+  * [Dead man snitch](https://deadmanssnitch.com/plans) - simply get a url and use it for the watchdog, we don't know if its AWS.
+  * Being on AWS like us, maybe even in the same region, is not good, since if AWS goes down we get silence. 
+  * We could investigate by nslooking the hostname, then the ip and try to identify the source.
+
+
+## Using pagerduty with alertmanager
+see `alert-manager/sample_alertmanager_with_pagerduty.yaml`
+* it used the built-in configuration for pagerduty, which only takes the API key (see pagerduty_configs in the config yaml)
+* It also sends watchdog to dead man's snitch - under "DMS"
+* Under route, we specify that matches on alertname: Watchdog, will go to DMS and NOT to the other receivers.
+* To avoid bombarding us with the same alert, e.g. is something caused many pods to fail, then we group alerts with the `group-by: alertname`, which means that it will treat all alerts with the same name as the same alert within the group_interval time.
+  * group_wait is the wait time in seconds that alert manager will wait after the first alert, and before it starts alerting
   
-
-
-
