@@ -278,7 +278,7 @@ Prometheus are using a k8s secret to store the config. there's also config-map w
   * [Dead man snitch](https://deadmanssnitch.com/plans) - simply get a url and use it for the watchdog, we don't know if its AWS.
   * Being on AWS like us, maybe even in the same region, is not good, since if AWS goes down we get silence. 
   * We could investigate by nslooking the hostname, then the ip and try to identify the source.
-
+* in the alert manager ui, the "silence" is like a snooze button where you silence alerts for a period of time
 
 ## Using pagerduty with alertmanager
 see `alert-manager/sample_alertmanager_with_pagerduty.yaml`
@@ -287,4 +287,4 @@ see `alert-manager/sample_alertmanager_with_pagerduty.yaml`
 * Under route, we specify that matches on alertname: Watchdog, will go to DMS and NOT to the other receivers.
 * To avoid bombarding us with the same alert, e.g. is something caused many pods to fail, then we group alerts with the `group-by: alertname`, which means that it will treat all alerts with the same name as the same alert within the group_interval time.
   * group_wait is the wait time in seconds that alert manager will wait after the first alert, and before it starts alerting
-  
+  * if for example, we want to wait for autoscale to correct something, we might want to set this value to something higher (e.g. 10 minutes?)
