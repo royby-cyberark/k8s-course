@@ -87,6 +87,11 @@ spec:
       containers:
       - name: api-gateway
         image: richardchesterwood/k8s-fleetman-api-gateway:release2
+        readinessProbe:
+          httpGet:
+            # our nginx forwards any /api to the api-gateway, the /api is removed when forwarded to the api, so just / here
+            path: /
+            port: 8080
         env:
         - name: SPRING_PROFILES_ACTIVE
           value: production-microservice

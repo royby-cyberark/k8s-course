@@ -123,6 +123,10 @@ So its better to use claims which are pointers to another config (best in its ow
 * View peristent volumes: `kubectl get pv`
 * View peristent volume claims: `kubectl get pvc`
 
+# Deploy cluster with minikube
+* `minikube start --cpus 8 --memory 5500`
+* you get: "Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default"
+* `kubectl apply -f .`
 
 # EKS - K8s on AWS
 ## Creating the EKS cluster
@@ -362,7 +366,22 @@ it
   * apply the new file
 * scale down take time so we wont scale up/down rapidly
 
-## Readiness and liveness probes
-* when we scale up/down it might take just a little time until the container application becomes ready, but the container is ready before that and we might get errors on those scaling up/down events.
+# Readiness and liveness probes
 
-* 
+## Readiness probes
+* when we scale up/down it might take just a little time until the container application becomes ready, but the container is ready before that and we might get errors on those scaling up/down events.
+* docs (see more params): https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+* We will use a readiness prob - we will tell k8s how test if a pod is ready by giving it some api endpoint to call, only then will it start directing traffic to it. we can also do without an http server - see later
+* under spec in the container - see workloads.yaml, api-gateway
+* we can see the prob info with pod describe command
+
+## Liveness probes
+* configured same as readiness prob, but is called continuously, and if k8s gets errors it restarts the whole CONTAINER
+* same params as readiness, like how many failure to get before it restarts the container
+
+## With an http server
+* we can do without an http server, with a "liveness command" (or readiness) - https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-a-liveness-command
+* it runs a command (exec) on the container
+* we can aldo do TCP prob - see docs
+
+
