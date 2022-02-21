@@ -312,3 +312,31 @@ Our process could hog more memory than that. it only means that we make sure the
 * CPU limit - if actual cpu usage exceeds at runtime - cpu will be clamped to the max value for this container (throttling)
 * We could for example, set a higher limit to memory to support some rare memory leak which we didn't find yet
 * all this uses Linux cgroups (or at least used)
+
+
+# K8s dashboard
+k8s has a dashbaord, its different if you run on minikube, actual k8s or eks. 
+you can see and do basically everything here, but usually we do infra as code.
+
+* for minikube its an addon, list addons and its called `dashboard` (in the kube-system ns)
+* enable with: `minikube addons enable dashboard`
+* show with: `minikube dashb` (its using a proxy so you will see it on the localhost)
+
+# Metric profiling in k8s
+* We could monitor a running cluster and get some metric as to how much resources it uses
+* We can use the top command (like linux): `kubectl top pod`, `kubectl top node` - but out of the box this doesn't work
+* We need to enable the metric server (running in the kube-system ns)
+* It's tricker in eks, but locally it's simple - it's an add-on to minikube
+* `minikube addons list` - and we will need to enable the `metric-server`
+* enable with: `minikube addons enable metrics-server`
+* you can see a new pod in the kube-system ns named metric-server
+* for at least a minute for it to collect data (see metrics not available etc.) - eventually the top commands will work
+  * see how much the containers are actually using.
+* You should be able to see the metric-server graph in the dashboard, but in the past there was some issues, probably solved by now.
+  * if there's still an issue, you can enable heapster which is the prior solution to metric-server - see the course video for details ("Viewing metrics on the dashboard) - but heapster was deprecated so it's probably not relevant.
+* 
+
+## Java apps tuning
+* Important to use `-Xmx` to set the maximum heap size. 
+* Then we would monitor the actual ram, cpu usage and set reasonable requests values accordingly
+it
