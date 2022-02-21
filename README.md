@@ -62,6 +62,7 @@ Queue image:
 * rollout history: `kubectl rollout history deployment webapp`
 * delete all resources created from a yaml file/all files: `kubectl delete -f <file.yaml>`, `kubectl delete -f .`
 * get pod logs (only pods have logs): `kubectl logs [-f] <pod-name>` (-f to follow)
+* get all pods from all namespaces: `kubectl get all --all-namespaces`
 
 # Replica sets
 * you can specify how many replicas you desire and k8s will make sure those are always up
@@ -134,6 +135,7 @@ So its better to use claims which are pointers to another config (best in its ow
 * Then apply your config: `kubectl apply -f .`
 
 ## Destroying the EKS cluster
+* TRY: to un apply by: `kubectl delete -f .`
 * Run: `eksctl delete cluster <cluster-name>`
 * Verify destoryed: 
   * ec2 instances (is auto ternimated)
@@ -288,3 +290,53 @@ see `alert-manager/sample_alertmanager_with_pagerduty.yaml`
 * To avoid bombarding us with the same alert, e.g. is something caused many pods to fail, then we group alerts with the `group-by: alertname`, which means that it will treat all alerts with the same name as the same alert within the group_interval time.
   * group_wait is the wait time in seconds that alert manager will wait after the first alert, and before it starts alerting
   * if for example, we want to wait for autoscale to correct something, we might want to set this value to something higher (e.g. 10 minutes?)
+
+# Requests and limits
+* Assuming we know what resources - cpu, memory, our pod needs (which we, as devs, need to determine) - we can specify it in its deployment yaml.
+* if a node has not more RAM according to these requests, then it will not schedule a pod to that node, if there are other nodes available with free resource, then it would be deployed there, otherwise it will fail.
+* if you are working with minikube for example, you can run `kubectl describe node <master node name>` to see how much memory it has (Capacity), and how much is "allocatable" which is the account available to nodes (Allocatable)
+* If we don't have enough resources, our pod will be pending, and describing it will show the problem.
+* **THESE ARE JUST HINTS! it will make sure you don't over deploy pods, but it won't limit anything in runtime.**
+## Memory Requests
+* We added to `workloads.yaml` resources.requests.memory: 300M - this doesn't mean that it uses the full amount, just that it requests this amount to be available to it.
+Our process could hog more memory than that. it only means that we make sure the node has enough resources. we can limit it with limits next.
+
+## CPU Requests
+* 1 cpu in k8s is 1 vcpu in aws and similar in other cloud vendors
+* We added to workloads.yaml resources.requests.cpu: 1 - again, not using the full cpu, just that it verifies that the node has this capacity. our process can still hog more resources. to limit it, we will use limits next
+* Usually a pod won't need a full cpu, so we can use fractions like 0.1, 0.5 etc. or milli cpus, e.g 100m (100 milli cpu = 0.1 cpu)
+
+## Limits
+* Same syntax as requests, we will add to `workloads.yaml` resources.limits.memory, cpu. they should be equal or higher than the request values.
+* Memory limit - if actual memory usage of container exceeds the runtime at limit - container is restarted
+* CPU limit - if actual cpu usage exceeds at runtime - cpu will be clamped to the max value for this container (throttling)
+* We could for example, set a higher limit to memory to support some rare memory leak which we didn't find yet
+* all this uses Linux cgroups (or at least used)
+
+
+# K8s dashboard
+k8s has a dashbaord, its different if you run on minikube, actual k8s or eks. 
+you can see and do basically everything here, but usually we do infra as code.
+
+* for minikube its an addon, list addons and its called `dashboard` (in the kube-system ns)
+* enable with: `minikube addons enable dashboard`
+* show with: `minikube dashb` (its using a proxy so you will see it on the localhost)
+
+# Metric profiling in k8s
+* We could monitor a running cluster and get some metric as to how much resources it uses
+* We can use the top command (like linux): `kubectl top pod`, `kubectl top node` - but out of the box this doesn't work
+* We need to enable the metric server (running in the kube-system ns)
+* It's tricker in eks, but locally it's simple - it's an add-on to minikube
+* `minikube addons list` - and we will need to enable the `metric-server`
+* enable with: `minikube addons enable metrics-server`
+* you can see a new pod in the kube-system ns named metric-server
+* for at least a minute for it to collect data (see metrics not available etc.) - eventually the top commands will work
+  * see how much the containers are actually using.
+* You should be able to see the metric-server graph in the dashboard, but in the past there was some issues, probably solved by now.
+  * if there's still an issue, you can enable heapster which is the prior solution to metric-server - see the course video for details ("Viewing metrics on the dashboard) - but heapster was deprecated so it's probably not relevant.
+* 
+
+## Java apps tuning
+* Important to use `-Xmx` to set the maximum heap size. 
+* Then we would monitor the actual ram, cpu usage and set reasonable requests values accordingly
+it
