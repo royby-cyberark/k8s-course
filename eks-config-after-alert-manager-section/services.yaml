@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: Service
+metadata: 
+  name: fleetman-webapp
+spec:
+# This defines which pods are going to be included in this service
+  selector:
+    app: webapp
+
+  ports:
+    - name: http
+      port: 80
+
+  loadBalancerSourceRanges:
+    - "194.90.225.101/32"
+    
+  type: LoadBalancer
+
+---
+
+apiVersion: v1
+kind: Service
+metadata: 
+  name: fleetman-queue
+
+spec:
+# This defines which pods are going to be included in this service
+  selector:
+    app: queue
+
+  ports:
+    - name: http
+      port: 8161
+    
+    - name: endpoint
+      port: 61616
+
+  type: ClusterIP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata: 
+  name: fleetman-position-tracker
+
+spec:
+# This defines which pods are going to be included in this service
+  selector:
+    app: position-tracker
+
+  ports:
+    - name: http
+      port: 8080
+
+  type: ClusterIP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata: 
+  name: fleetman-api-gateway
+spec:
+# This defines which pods are going to be included in this service
+  selector:
+    app: api-gateway
+
+  ports:
+    - name: http
+      port: 8080
+  
+  type: ClusterIP
+  

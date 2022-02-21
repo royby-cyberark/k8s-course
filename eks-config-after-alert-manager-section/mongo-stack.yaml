@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+spec:
+  selector:
+    matchLabels:
+      app: mongodb
+  replicas: 1
+  template: # Template for the pod
+    metadata: 
+      labels: 
+        app: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:3.6.5-jessie
+        volumeMounts:
+          - name: mongo-persistent-storage
+            mountPath: /data/db # mount point, location inside the container
+      volumes:
+        - name: mongo-persistent-storage
+        # A pointer to the configuration of how we want the mount io be implemented
+          persistentVolumeClaim:
+            claimName: mongo-pvc
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleetman-mongodb
+spec:
+  selector:
+    app: mongodb
+  ports:
+    - name: mongoports
+      port: 27017
+  type: ClusterIP
+
