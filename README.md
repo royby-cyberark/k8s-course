@@ -384,4 +384,28 @@ it
 * it runs a command (exec) on the container
 * we can aldo do TCP prob - see docs
 
+# QoS and Evictions
+## QoS
+* pods that has limits - the scheduler will evict such pod if it goes over the limit, and reschedule
+* if you set requests and limits you give the scheduler all the info it needs, if you only set requests you give it less, and nothing give it nothing. k8s labels the pods according the their specs (both memory and cpu) - for more details see the docs:
+  * Specify equal requests and limits: "QoS: Guaranteed" (both mem and cpu req+lmt are equal)
+  * Specify request but NOT limit - memory OR cpu: "QoS: Burstable" 
+  * No req, no limit - "QoS: BestEffort"
+* You can see the labels by running `kubectl describe pod <pod>`, see the "QoS Class" field
+## Evictions
+The labels above, help the scheduler decide what to do with each pods when they are under pressure.
+The worst thing is if we lose nodes, e.g. due to it running out of memory.
+* "QoS: Guaranteed" - the best, if it goes over the limit it will automatically be evicted (uses Linux cgroups) and the node won't suffer. it will then be rescheduled on another pod. **Of course we must take care of the requests and limit values to make sense**
+* "QoS: Burstable" - we have only requests here, if we go above the requests. "burstable" means that it allows to go over the requests (in k8s this doesn't mean only for a short time, but just go over the reqs). we could go over the node limits.
+  * if the node goes over its resources, scheduler needs to evict something: 1. best effort pods first, 2. then burstable, 3. then guaranteed pods. 
+  * pods are rescheduled - restarted and put on a node somewhere.
+  * if there are no free pods, and if we're using cluster auto-scaling, then we should have a node created dynamically
+  * **this is an automatic priority system**
+* **REMEMBER:** This is over simplification of the actual logic of the cluster, see the docs for more info https://kubernetes.io/docs/tasks/configure-pod-container/quality-service-pod/
 
+## Pods and priorities
+docs: https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/
+* You can add priorities (number 0, 1, etc - higher is higher priority) to pods
+* Mainly used for NEW pods that are scheduled - if we already have a scheduled pod and we got a higher priority pod - k8s will evict the previous one (and reschedule it) and schedule the new, higher priority one. 
+* Configuration: some yaml with PriorityClass with a numeric value and a label and reference it in your pod def. 
+* QoS and priority are related (they should be orthogonal, but they are related), see the docs for more info.
