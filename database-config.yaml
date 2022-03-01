@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: global-database-config-v2
+  namespace: default
+# key-value pairs: 
+data:
+  DATABASE_URL: "https://dbserver.somewhere2.com:3306"
+  DATABASE_USER: "myuser"
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: global-database-config-v4
+  namespace: default
+data:
+  database.properties: |
+    database.url=https://dbserver.somewhere2.com:3306
+    database.user=myuser
