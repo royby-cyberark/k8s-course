@@ -409,3 +409,77 @@ docs: https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preem
 * Mainly used for NEW pods that are scheduled - if we already have a scheduled pod and we got a higher priority pod - k8s will evict the previous one (and reschedule it) and schedule the new, higher priority one. 
 * Configuration: some yaml with PriorityClass with a numeric value and a label and reference it in your pod def. 
 * QoS and priority are related (they should be orthogonal, but they are related), see the docs for more info.
+
+# ConfigMap and secrets
+To avoid duplicating things like env vars in our yams, we can define a config map and get it from there, updating it in one place.
+* see `database-config.yaml`, apply it
+* `kubectl get configmap` (or cm)
+* `kubectl describe cm global-database-config`
+
+## Referencing ConfigMap values - I
+We have 3 ways to consume those values. 
+
+The worst way (many lines, and we need this for each reference, each var in this case), in your env element:
+
+```
+env: 
+- name: DATABASE_URL
+  valueFrom:
+    configMapKeyRef:
+      # the name of the config map we defined:
+      name: global-database-config
+      # the key from our configMap yaml:
+      key: database.url
+```
+
+  * to check the env var
+    * `kubectl exec -it position-simulator-647b8cccf5-zslvs -- sh`
+    * `echo $DATABASE_URL`
+
+## ConfigMap values propogation
+The changes will NOT be updated in the pods. we recreate the pod (e.g. delete it). 
+See docs to see if there is another, newer method for this.
+
+See: https://github.com/kubernetes/kubernetes/issues/22368
+
+A workround can be to treat configMap as immutable, and abandon each configMap on changes, and create a new version (e.g. global-database-config-v1, v2 etc.), then apply the configmap and workload yamls and we get the update.
+
+## Referencing ConfigMap values - II (using envFrom)
+
+Here we get ALL variable from the specified configMap.
+all the vars from the config must be valid env vars.
+
+
+```
+env:
+- name: SPRING_PROFILES_ACTIVE
+  value: production-microservice
+envFrom:
+- configMapRef:
+  name: global-database-config-v2
+```
+
+## Mounting ConfigMap as Volumes
+Instead of injecting env vars, we can mount the values from the configMap as a file, mounted to a directory using `volumeMount`
+mountPath folder is created automatically.
+
+**We set the `position-tracker` (see workloads.yaml) to work with mounts** - see the `volumeMounts` and `volumes` elements
+
+run `kubectl exec -it <position-tracker-xxx> -- sh` and navigate to /etc/any/directory/config
+
+This approach make each env var intoa file. 
+A more suitable way might be (in the database-config.yaml):
+we need to split the line into several lines with line breaks use the | char, which will have all the following indented part as the content of the file (we also updated : into = for a proper properties file)
+
+```
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: global-database-config-v4
+  namespace: default
+data:
+  database.properties: |
+    database.url=https://dbserver.somewhere2.com:3306
+    database.user=myuser
+```
+
