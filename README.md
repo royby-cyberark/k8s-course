@@ -483,3 +483,30 @@ data:
     database.user=myuser
 ```
 
+# Secrets
+The values must be base64 encoding
+It is not really more secure, just prevetns secrets from being printed to the console. 
+See example in `secret-store.yaml`.
+
+There are things like hashicorp vault for actual security around secrets.
+
+**Note:** You COULD restrict with RBAC differently on configMap and on secrets, which might be useful.
+
+## Example of us using ConfigMap and Secrets before
+
+### ConfigMap
+we used configMap before was in fluentd (in the ELK part)
+in `elastic-stack.yaml`, look for: volumeMounts, config-volume, mountPath: /etc/fluent/config.d
+`config-volume`, which points to a configMap called `fluentd-es-config-v0.1.4`
+
+`fluentd-es-config-v0.1.4` has many config files that are dynamically created in the container
+
+### Secrets
+in `alertmanager.yaml` we used secrets to avoid printing the slack url
+
+## Hotloading ConfigMap with springboot apps
+If you're into Spring Boot and want to hook up with your ConfigMaps, Spring Cloud Kubernetes project makes this easy. 
+And, you can hot reload any changes to the ConfigMap
+https://spring.io/projects/spring-cloud-kubernetes
+
+Full demo: https://www.youtube.com/watch?v=DiJ0Na8rWvc&t=563s
