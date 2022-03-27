@@ -510,3 +510,133 @@ And, you can hot reload any changes to the ConfigMap
 https://spring.io/projects/spring-cloud-kubernetes
 
 Full demo: https://www.youtube.com/watch?v=DiJ0Na8rWvc&t=563s
+
+# Ingress Control
+We want to allow access to some services:
+1. externally - e.g. users accessing the web app
+2. internal use - e.g. devops need access to the queue container, prometheus etc. 
+
+* **ClusterIP**: accessible only from the cluster
+* **NodePort**: services of type NodePort - is usually just for local dev, accessing the pods locally.
+* **LoadBalancer**: By the cloud provider, The right way to allow access to some services, which you can, in aws use security groups to restrict access to (e.g. to your corp network)
+
+LB is fine when we have one service. if we have several services we want to publish. we end up with a LB for each service.
+There is an advange, they they cost.
+
+We used the AWS "Class LB", aws has an Application LB (ALB), which is much more powerful.
+We might be able to solve the issue above with an ALB, but k8s is more cloud agnostic and doesn't work naturally with it.
+But there's no reason to use it, because of the **Ingress Controller** which solves just this.
+
+We will have ONE LB which will route traffic into the Ingress Controller (e.g. NginX) which, based on our configuration, will route traffic to the right service (fanning out)
+
+**Usually we will have TWO LBs - one for management, and one for users.**
+
+## Defining routing rules on minikube
+
+We can run an ingress controller on minikube for testing.
+it is an add-on
+
+* see addon: `minikube addons list`
+* enable: `minikube addons list enable ingress`
+* view its pod: `minikube get pods -n kube-system
+  * see nginx-ingress-xxx pod
+  * there's also some default-http-backend-xxx, see below
+* There isn't a new service created (see with `kubectl get svc --all-namespaces`)
+* nginx will run on the minukube ip (`minikube ip`)
+* the default is to send all traffic to the default http backend (so you get some generic error if you go to any port)
+
+### Defining rules yaml
+https://kubernetes.io/docs/concepts/services-networking/ingress/
+
+just for testing on minikube we would emulate a domain name in our os by updating the hosts file
+(/etc/hosts or system32\drivers\hosts) - with the minikube ip and some domain name
+for our example let's use:
+
+`x.x.x.x fleetman.com`
+
+Below, all urls on 'fleetman.com/' will be redirected to the fleetman-webapp service.
+
+in `ingress.yaml` for example:
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: basic-routing
+spec:
+  ingressClassName: nginx-example
+  rules:
+    - host: fleetman.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: fleetman-webapp
+              servicePort: 80 # The internal port that the service listens on
+```
+
+Apply as usual
+
+* view ingress: `kubectl get ingress`
+* `kubectl describe ingress basic-routing` - view all rules
+
+### Adding rules
+Let's add another rule for the qeueu:
+
+in `ingress.yaml` for example:
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: basic-routing
+spec:
+  ingressClassName: nginx-example
+  rules:
+    - host: fleetman.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: fleetman-webapp
+              servicePort: 80 # The internal port that the service listens on
+    - host: queue.fleetman.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: fleetman-queue
+              servicePort: 8161 # The internal port that the service listens on
+```
+
+* And the same as before adding to the hosts file:
+`x.x.x.x queue.fleetman.com`
+
+* Apply as usual
+
+To see what you can do with routes, see the docs, if we're working with the nginx ingress controller (default?):
+https://kubernetes.github.io/ingress-nginx/
+
+### Authentication
+
+For the nginx ingress controller auth. see: https://kubernetes.github.io/ingress-nginx/examples/auth/basic/
+To allow only some routes to have auth. seperate to different yaml files - only the secured ones will have the auth. settings.
+
+### Running ingress on AWS
+* **MAIN POINT:** We are still using LB, but we only need one of those, and behind it an ingress controller which will fan out to all services.
+* The same rules as before will work here - add the rules to our configuration
+* Then take the yaml from here to apply pre-requisites to the cluster, 
+actually follow this:
+https://kubernetes.github.io/ingress-nginx/deploy/#quick-start to install the yaml, or do it via helm. 
+* This creates an `ingress-nginx` namespace
+* `get all -n ingress-nginx` - staring up some pods
+* Follow the AWS instructions: https://kubernetes.github.io/ingress-nginx/deploy/#aws
+* But actually, best is to follow AWS docs for working with EKS and LB: https://docs.aws.amazon.com/eks/latest/userguide/network-load-balancing.html
+* We don't need the LBs any more - we can remove them, and we will have one created by the aws configuraiton we apply. we also don't need PortNodes any more, since we're using an ingress controller
+  * So we can change all NodeIP to ClusterIP and remove the nodePort from its config
+
+
+* Any routes will only work if the service is in the same namespace as the ingress object (default ns in our example above). 
+Simply create another ingress object in the needed namespace
+
+### Setting up tls in your k8s cluster
+https://www.youtube.com/watch?v=gEzCKNA-nCg
+
