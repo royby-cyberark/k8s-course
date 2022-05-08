@@ -640,3 +640,50 @@ Simply create another ingress object in the needed namespace
 ### Setting up tls in your k8s cluster
 https://www.youtube.com/watch?v=gEzCKNA-nCg
 
+# Other workload types
+## Batch Jobs
+Just when you want to run some job - runs a container to completion (as oppose to running it forever)
+```
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pi
+spec: # Job spec
+  template:
+    spec: # Pod spec
+      containers:
+      - name: pi
+        image: perl
+        command: ["perl",  "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+      restartPolicy: Never
+  backoffLimit: 4 # How many times to retry
+```
+
+You can `get jobs`, `describe job <name>` and get the logs from the pod
+when you delete a job, the pod will be deleted
+
+## Cron Jobs
+Type is `CronJob`, and you need to define the cron expression
+
+## DaemonSet
+A DaemonSet ensures that all (or some) Nodes run a copy of a Pod. As nodes are added to the cluster, Pods are added to them. As nodes are removed from the cluster, those Pods are garbage collected. Deleting a DaemonSet will clean up the Pods it created.
+
+Some typical uses of a DaemonSet are:
+
+* running a cluster storage daemon on every node
+* running a logs collection daemon on every node
+* running a node monitoring daemon on every node
+
+## StatefulSets
+It is NOT persistence - that's what persistant volumes are for.
+
+The main usecase is: when we have a database and we want to replicate it. if its only one pod, we dont need StatefulSet. It depends on the db, but usually, when a db is replicated, you need this.
+
+We need a way to let the db (e.g. mongo) to share the data somehow and orchestrate the replication.
+
+Key points:
+
+1. In a StatefulSet pods will have a predictable name: podnam-0, 1, 2..n
+2. Pods will always start up in sequence
+3. Clients can address them by name
+
