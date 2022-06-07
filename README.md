@@ -687,3 +687,10 @@ Key points:
 2. Pods will always start up in sequence
 3. Clients can address them by name
 
+Usually its better to treat pods "as cattle"
+
+# CICI for k8s
+
+Simple Jenkins dockerfile including basic plugins:
+https://github.com/my-fleetman-organization/jenkins/blob/master/Dockerfile
+
