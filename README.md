@@ -694,3 +694,6 @@ Usually its better to treat pods "as cattle"
 Simple Jenkins dockerfile including basic plugins:
 https://github.com/my-fleetman-organization/jenkins/blob/master/Dockerfile
 
+
+# HELM
+
