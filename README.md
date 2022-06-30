@@ -695,5 +695,24 @@ Simple Jenkins dockerfile including basic plugins:
 https://github.com/my-fleetman-organization/jenkins/blob/master/Dockerfile
 
 
-# HELM
+# HELM - The package manager for Kubernetes
+* https://helm.sh
+* https://helm.sh/docs/intro/install/
+* after installing a chart, you might want to look at what's been added
+  * `kubectl get po --all-namespaces`
+  * `kubectl get all`
+* Useful commands:
+  * `heml install <logical repo name>/<chart>`
+  * `helm list`
+  * `helm uninstall`
+  * `helm repo list`
+  * `helm repo add <logical name> <repo url>`
+    * alway run: `helm repo update` - update with the remote repo
+* recommnended chart for monitoring (grafana, prometheus + some predefined rules): https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack
+* update chart values
+  * `helm show values <repo logical name>/<chart>` - send to file
+  * override during installation: `helm install ... --set <valueName> ...`
+  * or you can upgrade with the new values: `helm upgrade ... --set <parent.valueKey>=<value>` **IMPORTANT!** note the valueKey heirarchy in the yaml.   
+
+
 
