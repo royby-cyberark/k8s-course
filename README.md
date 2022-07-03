@@ -715,4 +715,5 @@ https://github.com/my-fleetman-organization/jenkins/blob/master/Dockerfile
   * or you can upgrade with the new values: `helm upgrade ... --set <parent.valueKey>=<value>` **IMPORTANT!** note the valueKey heirarchy in the yaml.   
 
 
-
+## Example for a pro helm chart
+* see: 
